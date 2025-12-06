@@ -1,0 +1,47 @@
+@font-face {
+   font-family: 'icons';
+   src: url('./font/Flat-UI-Icons.eot');
+   src: url('./font/Flat-UI-Icons.eot?#iefix') format('embedded-opentype'), url('./font/Flat-UI-Icons.woff') format('woff'), url('./font/Flat-UI-Icons.ttf') format('truetype');
+   font-weight: normal;
+   font-style: normal;
+}
+
+body, html{
+	padding: 0;
+	margin: 0;	
+	font-family: 'Lato', Helvetica, Arial, sans-serif;
+	background: #ECF0F1;
+}
+
+*:focus  
+{  
+    outline: none;  
+}  
+
+content{
+	overflow-y: scroll;
+	float: left;
+	width: 100%;
+	min-height: 80%;
+}
+
+
+item{
+	width: 90%;
+	margin: 20px 5%;
+	display: block;
+	color: #2C3E50;
+}
+
+question{
+	display: block;
+	font-weight: 600;
+}
+
+answer{
+	display: block;
+	border-left: 3px solid #95A5A6;
+	padding-left: 10px;
+	margin-top: 10px;
+	margin-left: 10px;
+}
