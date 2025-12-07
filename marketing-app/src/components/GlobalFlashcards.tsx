@@ -126,6 +126,16 @@ export default function GlobalFlashcards({ lessons, onBack }: Props) {
     }
   }, [currentIndex, mode, currentQuestion, markAsViewed])
 
+  // Reset scroll position when card changes or flips
+  useEffect(() => {
+    if (mode === 'flashcards') {
+      const backSide = document.querySelector('.flashcard-back') as HTMLElement
+      if (backSide) {
+        backSide.scrollTop = 0
+      }
+    }
+  }, [currentIndex, isFlipped, mode])
+
   // Setup screen
   if (mode === 'setup') {
     return (

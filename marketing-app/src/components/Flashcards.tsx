@@ -93,6 +93,14 @@ export default function Flashcards({ lesson, onBack }: Props) {
     markAsViewed(lesson.id, currentQuestion.id)
   }, [currentIndex, lesson.id, currentQuestion.id, markAsViewed])
 
+  // Reset scroll position when card changes or flips
+  useEffect(() => {
+    const backSide = document.querySelector('.flashcard-back') as HTMLElement
+    if (backSide) {
+      backSide.scrollTop = 0
+    }
+  }, [currentIndex, isFlipped])
+
   return (
     <div className="flashcards">
       <div className="flashcards-header">
