@@ -1,69 +1,59 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
-import type { Lesson } from '../types'
-import './Quiz.css'
-
-// Format AI explanation with paragraphs and bold keywords
-function formatExplanation(text: string) {
-  if (!text) return null
-
-  // Split into paragraphs (by double spaces or newlines)
-  const paragraphs = text
-    .split(/\n{2,}|(?<=[.!?])\s{2,}/)
-    .filter(p => p.trim().length > 0)
-
-  return paragraphs.map((paragraph, idx) => {
-    // Bold words in quotes or common marketing terms
-    let formatted = paragraph
-      // Bold text in "quotes"
-      .replace(/"([^"]*)"/g, '<strong>"$1"</strong>')
-      // Bold text in 'quotes'
-      .replace(/'([^']*)'/g, "<strong>'$1'</strong>")
-      // Bold specific marketing concepts if they appear as standalone terms
-      .replace(/\b(marketing|hodnota|strategie|zákazník|brand|produkt|služba|cena|prodej|komunikace|segmentace|cílová skupina|SWOT|4P|B2B|B2C|ROI|KPI)\b/gi, '<strong>$1</strong>')
-
-    return (
-      <p key={idx} className="explanation-paragraph">
-        {formatted.split('\n').map((line, i) => (
-          <span key={i}>
-            <span dangerouslySetInnerHTML={{ __html: line }} />
-            {i < formatted.split('\n').length - 1 && <br />}
-          </span>
-        ))}
-      </p>
-    )
-  })
-}
+import type { Lesson, Question } from '../types'
+import './GlobalQuiz.css'
 
 interface Props {
-  lesson: Lesson
+  lessons: Lesson[]
   onBack: () => void
-  onComplete?: (correct: number, total: number) => void
 }
 
-export default function Quiz({ lesson, onBack, onComplete }: Props) {
+type QuizMode = 'setup' | 'quiz' | 'results'
+
+interface QuizQuestion extends Question {
+  lessonId: number
+  lessonTitle: string
+}
+
+export default function GlobalQuiz({ lessons, onBack }: Props) {
+  const [mode, setMode] = useState<QuizMode>('setup')
+  const [questionCount, setQuestionCount] = useState(20)
+  const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Set<number>>(new Set())
   const [noneSelected, setNoneSelected] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
   const [score, setScore] = useState({ correct: 0, total: 0 })
-  const [isFinished, setIsFinished] = useState(false)
-  const [wrongQuestionIds, setWrongQuestionIds] = useState<Set<number>>(new Set())
-  const [retryMode, setRetryMode] = useState(false)
-  const [retryQuestionIds, setRetryQuestionIds] = useState<number[]>([])
   const explanationRef = useRef<HTMLDivElement>(null)
 
-  const questions = useMemo(() => {
-    if (retryMode && retryQuestionIds.length > 0) {
-      return lesson.questions.filter(q => retryQuestionIds.includes(q.id))
+  const allQuestions = useMemo(() => {
+    const qs: QuizQuestion[] = []
+    for (const lesson of lessons) {
+      for (const q of lesson.questions) {
+        qs.push({
+          ...q,
+          lessonId: lesson.id,
+          lessonTitle: lesson.title
+        })
+      }
     }
-    return lesson.questions
-  }, [lesson.questions, retryMode, retryQuestionIds])
+    return qs
+  }, [lessons])
 
-  const currentQuestion = questions[currentIndex]
+  const totalAvailable = allQuestions.length
 
-  // Check if this question has any correct answers
-  const hasCorrectAnswers = currentQuestion.answers.some(a => a.isCorrect)
+  const startQuiz = () => {
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5)
+    const selected = shuffled.slice(0, Math.min(questionCount, totalAvailable))
+    setQuestions(selected)
+    setCurrentIndex(0)
+    setSelectedAnswers(new Set())
+    setNoneSelected(false)
+    setIsSubmitted(false)
+    setShowExplanation(false)
+    setScore({ correct: 0, total: 0 })
+    setMode('quiz')
+  }
 
   const handleAnswerToggle = (answerIndex: number) => {
     if (isSubmitted) return
@@ -97,6 +87,7 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
 
     setIsSubmitted(true)
 
+    const currentQuestion = questions[currentIndex]
     const correctIndices = new Set(
       currentQuestion.answers
         .map((a, i) => (a.isCorrect ? i : -1))
@@ -114,10 +105,6 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
         [...selectedAnswers].every((i) => correctIndices.has(i))
     }
 
-    if (!isCorrect) {
-      setWrongQuestionIds(prev => new Set([...prev, currentQuestion.id]))
-    }
-
     setScore((prev) => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1,
@@ -132,50 +119,22 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
       setIsSubmitted(false)
       setShowExplanation(false)
     } else {
-      setIsFinished(true)
-      // Only save score on first attempt, not on retry
-      if (!retryMode) {
-        onComplete?.(score.correct, score.total)
-      }
+      setMode('results')
     }
   }
 
   const handleRestart = () => {
-    setCurrentIndex(0)
-    setSelectedAnswers(new Set())
-    setNoneSelected(false)
-    setIsSubmitted(false)
-    setShowExplanation(false)
-    setScore({ correct: 0, total: 0 })
-    setIsFinished(false)
-    setWrongQuestionIds(new Set())
-    setRetryMode(false)
-    setRetryQuestionIds([])
-  }
-
-  const handleRetryWrong = () => {
-    const wrongIds = [...wrongQuestionIds]
-    setRetryQuestionIds(wrongIds)
-    setRetryMode(true)
-    setCurrentIndex(0)
-    setSelectedAnswers(new Set())
-    setNoneSelected(false)
-    setIsSubmitted(false)
-    setShowExplanation(false)
-    setScore({ correct: 0, total: 0 })
-    setIsFinished(false)
-    setWrongQuestionIds(new Set())
+    setMode('setup')
   }
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Don't handle if user is typing in an input
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-    if (isFinished) return
+    if (mode !== 'quiz') return
 
     const key = e.key
+    const currentQuestion = questions[currentIndex]
 
-    // Number keys 1-9 for answers
     if (key >= '1' && key <= '9') {
       const index = parseInt(key) - 1
       if (currentQuestion && index < currentQuestion.answers.length) {
@@ -183,12 +142,10 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
       }
     }
 
-    // 0 for "none correct"
     if (key === '0') {
       handleNoneToggle()
     }
 
-    // Enter for submit/next
     if (key === 'Enter') {
       if (!isSubmitted && (selectedAnswers.size > 0 || noneSelected)) {
         handleSubmit()
@@ -197,7 +154,6 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
       }
     }
 
-    // E for explanation toggle
     if (key === 'e' || key === 'E') {
       if (isSubmitted) {
         setShowExplanation(prev => {
@@ -211,39 +167,66 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
         })
       }
     }
-  }, [currentQuestion, isSubmitted, isFinished, selectedAnswers, noneSelected])
+  }, [mode, questions, currentIndex, isSubmitted, selectedAnswers, noneSelected])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
 
-  if (questions.length === 0) {
+  if (mode === 'setup') {
     return (
-      <div className="quiz">
+      <div className="global-quiz">
         <button className="back-button" onClick={onBack}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Zpět na lekci
+          Zpět na lekce
         </button>
-        <div className="no-questions">
-          <div className="no-questions-icon">📭</div>
-          <p>Tato lekce nemá žádné testové otázky.</p>
+
+        <div className="setup-card">
+          <div className="setup-icon">📋</div>
+          <h2>Celkový test</h2>
+          <p className="setup-description">
+            Test obsahuje otázky ze všech {lessons.length} lekcí.
+            Celkem je k dispozici <strong>{totalAvailable}</strong> otázek.
+          </p>
+
+          <div className="count-selector">
+            <label>Počet otázek:</label>
+            <div className="count-options">
+              {[10, 20, 50, totalAvailable].map((count) => (
+                <button
+                  key={count}
+                  className={`count-option ${questionCount === count ? 'active' : ''}`}
+                  onClick={() => setQuestionCount(count)}
+                >
+                  {count === totalAvailable ? 'Všechny' : count}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button className="start-button" onClick={startQuiz}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Spustit test ({Math.min(questionCount, totalAvailable)} otázek)
+          </button>
         </div>
       </div>
     )
   }
 
-  if (isFinished) {
+  if (mode === 'results') {
     const percentage = Math.round((score.correct / score.total) * 100)
     return (
-      <div className="quiz">
+      <div className="global-quiz">
         <div className="quiz-results">
           <div className="results-icon">
             {percentage >= 80 ? '🎉' : percentage >= 60 ? '👍' : '📚'}
           </div>
-          <h2>{retryMode ? 'Opakování chybných dokončeno!' : 'Test dokončen!'}</h2>
+          <h2>Celkový test dokončen!</h2>
           <div className="results-score">
             <span className="score-number">{score.correct}</span>
             <span className="score-divider">/</span>
@@ -254,30 +237,20 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
           </div>
           <p className="score-percentage">{percentage}% správně</p>
           <div className="results-message">
-            {percentage >= 80 && <p>Výborně! Látku máš skvěle zvládnutou.</p>}
-            {percentage >= 60 && percentage < 80 && <p>Dobrá práce! Ještě trochu procvič.</p>}
-            {percentage < 60 && <p>Zkus si lekci ještě jednou projít.</p>}
+            {percentage >= 80 && <p>Výborně! Jsi připraven/a na zkoušku!</p>}
+            {percentage >= 60 && percentage < 80 && <p>Dobrá práce! Ještě trochu procvič slabší oblasti.</p>}
+            {percentage < 60 && <p>Doporučujeme projít lekce znovu a zopakovat test.</p>}
           </div>
           <div className="results-actions">
-            {wrongQuestionIds.size > 0 && (
-              <button className="retry-wrong-button" onClick={handleRetryWrong}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="15" y1="9" x2="9" y2="15" />
-                  <line x1="9" y1="9" x2="15" y2="15" />
-                </svg>
-                Opakovat chybné ({wrongQuestionIds.size})
-              </button>
-            )}
             <button className="restart-button" onClick={handleRestart}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="1 4 1 10 7 10" />
                 <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
               </svg>
-              {retryMode ? 'Celý test znovu' : 'Zkusit znovu'}
+              Nový test
             </button>
             <button className="back-button-large" onClick={onBack}>
-              Zpět na lekci
+              Zpět na lekce
             </button>
           </div>
         </div>
@@ -285,14 +258,19 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
     )
   }
 
+  const currentQuestion = questions[currentIndex]
+
+  // Check if this question has any correct answers
+  const hasCorrectAnswers = currentQuestion.answers.some(a => a.isCorrect)
+
   return (
-    <div className="quiz">
+    <div className="global-quiz">
       <div className="quiz-header">
         <button className="back-button" onClick={onBack}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Zpět na lekci
+          Ukončit test
         </button>
         <div className="quiz-header-info">
           <div className="progress">
@@ -317,6 +295,10 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
       </div>
 
       <div className="question-card">
+        <div className="question-source">
+          Lekce {currentQuestion.lessonId}: {currentQuestion.lessonTitle}
+        </div>
+
         <h3 className="question-text">{currentQuestion.text}</h3>
 
         <div className="answers">
@@ -449,9 +431,7 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
                   </svg>
                   AI Vysvětlení
                 </div>
-                <div className="explanation-content">
-                  {formatExplanation(currentQuestion.aiExplanation || currentQuestion.explanation)}
-                </div>
+                <p>{currentQuestion.aiExplanation || currentQuestion.explanation}</p>
               </div>
             )}
           </div>
@@ -468,7 +448,7 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
             </button>
           ) : (
             <button className="next-button" onClick={handleNext}>
-              {currentIndex < questions.length - 1 ? 'Další otázka' : 'Dokončit test'}
+              {currentIndex < questions.length - 1 ? 'Další otázka' : 'Zobrazit výsledky'}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6" />
               </svg>

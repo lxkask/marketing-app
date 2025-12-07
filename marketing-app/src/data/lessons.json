@@ -9975,15 +9975,15 @@
           },
           {
             "text": "vysokým relativním tržním podílem a objemem prodejů pod 10 %",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "vysokým relativním tržním podílem a tempem růstu trhu pod 10 %",
-            "isCorrect": false
+            "isCorrect": true
           }
         ],
         "explanation": "Správná odpověď je „vysokým relativním tržním podílem a objemem prodejů pod 10 %\".",
-        "aiExplanation": "Kvadrant „dojné krávy\" v BCG matrici představuje strategickou pozici produktů s vysokým relativním tržním podílem, ale nízkým tempem růstu trhu. Správná odpověď zdůrazňuje klíčovou charakteristiku těchto produktů - jejich schopnost generovat stabilní a předvídatelné příjmy s objemem prodejů pod 10 %. Tyto produkty jsou pro společnost velmi významné, protože přinášejí konstantní hotovostní tok, který lze reinvestovat do rozvoje jiných strategických oblastí podnikání. Jejich high-share pozice na trhu jim umožňuje těžit z efektivních výrobních procesů a silné značky, díky čemuž jsou vysoce ziskové navzdory pomalému růstu trhu.\n\nNesprávné odpovědi v otázce ukazují typické nedorozumění při interpretaci BCG matice. Odpověď s tempem růstu trhu nad 10 % by spíše odpovídala kvadrantu „hvězd\", nikoliv „dojných krav\". Varianta s nízkým relativním tržním podílem a vysokým objemem prodejů naopak nesplňuje základní parametr vysokého tržního podílu, který je pro „dojné krávy\" charakteristický. Poslední nesprávná varianta s vysokým tržním podílem a nízkým tempem růstu trhu se sice blíží popisu, ale chybně spojuje parametry bez správného kontextu strategického uvažování.\n\nV marketingové pra"
+        "aiExplanation": "Kvadrant \"dojné krávy\" v BCG matrici představuje strategickou pozici produktů s vysokým relativním tržním podílem a NÍZKÝM TEMPEM RŮSTU TRHU (pod 10 %). Správná odpověď zdůrazňuje klíčovou charakteristiku těchto produktů - jejich stabilní pozici na zralém trhu s pomalým růstem. Tyto produkty jsou pro společnost velmi významné, protože přinášejí konstantní hotovostní tok, který lze reinvestovat do rozvoje jiných strategických oblastí podnikání. Jejich vysoký tržní podíl jim umožňuje těžit z efektivních výrobních procesů a silné značky, díky čemuž jsou vysoce ziskové navzdory pomalému růstu trhu.\n\nNesprávné odpovědi v otázce ukazují typické nedorozumění při interpretaci BCG matice. Odpověď s tempem růstu trhu nad 10 % by spíše odpovídala kvadrantu \"hvězd\", nikoliv \"dojných krav\". Varianta s nízkým relativním tržním podílem a objemem prodejů nad 10 % naopak nesplňuje základní parametr vysokého tržního podílu, který je pro \"dojné krávy\" charakteristický. Třetí nesprávná varianta s vysokým tržním podílem a objemem prodejů pod 10 % zaměňuje objem prodejů s tempem růstu trhu - objem prodejů není relevantním parametrem BCG matice, která používá relativní tržní podíl a tempo růstu trhu."
       },
       {
         "id": 32,
