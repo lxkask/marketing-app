@@ -1,10 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node scripts/parseHtml.js:*)",
-      "Bash(npm run dev:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(npx tsc:*)"
+      "Bash(git push)",
+      "Bash(node scripts/findQuestion.js:*)",
+      "Bash(node scripts/findQuestion.cjs:*)",
+      "Bash(node scripts/fixQuestion31.cjs:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run build:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:api.vercel.com)",
+      "Bash(cat:*)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:marketing-app-blush.vercel.app)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(vercel --version:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel deploy:*)",
+      "Bash(vercel alias:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,6 +8,7 @@ export type Question = {
   text: string;
   answers: Answer[];
   explanation: string;
+  aiExplanation?: string;
 }
 
 export type Note = {

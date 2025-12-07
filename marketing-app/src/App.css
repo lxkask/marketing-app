@@ -283,9 +283,40 @@
 }
 
 .footer p {
-  margin: 0;
+  margin: 0 0 0.75rem 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+}
+
+.footer-link:hover {
+  color: var(--primary-500);
+  background: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+.footer-link svg {
+  flex-shrink: 0;
 }
 
 /* Page transitions */

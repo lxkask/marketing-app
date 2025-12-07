@@ -33,8 +33,8 @@ for (let i = 0; i < h1Positions.length; i++) {
     ? cleanText(titleMatch[1])
     : `Lekce ${i + 1}`;
 
-  // Find OTÁZKY section
-  const questionsMatch = sectionHtml.match(/<h2[^>]*>[\s\S]*?OTÁZKY[\s\S]*?<\/h2>/i);
+  // Find OTÁZKY section - first try h2, then fallback to finding the text directly
+  let questionsMatch = sectionHtml.match(/<h2[^>]*>[\s\S]*?OTÁZKY[\s\S]*?<\/h2>/i);
   let notesHtml = sectionHtml;
   let questionsHtml = '';
 
@@ -42,6 +42,18 @@ for (let i = 0; i < h1Positions.length; i++) {
     const qIndex = sectionHtml.indexOf(questionsMatch[0]);
     notesHtml = sectionHtml.substring(0, qIndex);
     questionsHtml = sectionHtml.substring(qIndex);
+  } else {
+    // Fallback: find position of OTÁZKY text, then find the containing paragraph
+    const otazkyTextIndex = sectionHtml.toUpperCase().indexOf('OTÁZKY');
+    if (otazkyTextIndex !== -1) {
+      // Find the start of the containing <p> tag (search backwards from OTÁZKY)
+      const beforeOtazky = sectionHtml.substring(0, otazkyTextIndex);
+      const lastPTagIndex = beforeOtazky.lastIndexOf('<p');
+      if (lastPTagIndex !== -1) {
+        notesHtml = sectionHtml.substring(0, lastPTagIndex);
+        questionsHtml = sectionHtml.substring(lastPTagIndex);
+      }
+    }
   }
 
   // Extract notes
