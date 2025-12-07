@@ -2,6 +2,38 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import type { Lesson } from '../types'
 import './Quiz.css'
 
+// Format AI explanation with paragraphs and bold keywords
+function formatExplanation(text: string) {
+  if (!text) return null
+
+  // Split into paragraphs (by double spaces or newlines)
+  const paragraphs = text
+    .split(/\n{2,}|(?<=[.!?])\s{2,}/)
+    .filter(p => p.trim().length > 0)
+
+  return paragraphs.map((paragraph, idx) => {
+    // Bold words in quotes or common marketing terms
+    let formatted = paragraph
+      // Bold text in "quotes"
+      .replace(/"([^"]*)"/g, '<strong>"$1"</strong>')
+      // Bold text in 'quotes'
+      .replace(/'([^']*)'/g, "<strong>'$1'</strong>")
+      // Bold specific marketing concepts if they appear as standalone terms
+      .replace(/\b(marketing|hodnota|strategie|zákazník|brand|produkt|služba|cena|prodej|komunikace|segmentace|cílová skupina|SWOT|4P|B2B|B2C|ROI|KPI)\b/gi, '<strong>$1</strong>')
+
+    return (
+      <p key={idx} className="explanation-paragraph">
+        {formatted.split('\n').map((line, i) => (
+          <span key={i}>
+            <span dangerouslySetInnerHTML={{ __html: line }} />
+            {i < formatted.split('\n').length - 1 && <br />}
+          </span>
+        ))}
+      </p>
+    )
+  })
+}
+
 interface Props {
   lesson: Lesson
   onBack: () => void
@@ -408,7 +440,9 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
                   </svg>
                   AI Vysvětlení
                 </div>
-                <p>{currentQuestion.aiExplanation || currentQuestion.explanation}</p>
+                <div className="explanation-content">
+                  {formatExplanation(currentQuestion.aiExplanation || currentQuestion.explanation)}
+                </div>
               </div>
             )}
           </div>
