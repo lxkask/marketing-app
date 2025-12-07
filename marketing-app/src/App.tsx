@@ -289,6 +289,7 @@ function App() {
 
       <footer className="footer">
         <p>Tahák pro přípravu na závěrečný test</p>
+        <p className="footer-credit">Created by</p>
         <div className="footer-links">
           <a
             href="https://github.com/lxkask"
