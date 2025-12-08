@@ -51,14 +51,23 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
   const [wrongQuestionIds, setWrongQuestionIds] = useState<Set<number>>(new Set())
   const [retryMode, setRetryMode] = useState(false)
   const [retryQuestionIds, setRetryQuestionIds] = useState<number[]>([])
+  const [shuffleEnabled, setShuffleEnabled] = useState(false)
+  const [isQuizStarted, setIsQuizStarted] = useState(false)
   const explanationRef = useRef<HTMLDivElement>(null)
 
   const questions = useMemo(() => {
+    let qs = lesson.questions
     if (retryMode && retryQuestionIds.length > 0) {
-      return lesson.questions.filter(q => retryQuestionIds.includes(q.id))
+      qs = lesson.questions.filter(q => retryQuestionIds.includes(q.id))
     }
-    return lesson.questions
-  }, [lesson.questions, retryMode, retryQuestionIds])
+
+    // Shuffle if enabled and quiz hasn't started yet
+    if (shuffleEnabled && !isQuizStarted) {
+      return [...qs].sort(() => Math.random() - 0.5)
+    }
+
+    return qs
+  }, [lesson.questions, retryMode, retryQuestionIds, shuffleEnabled, isQuizStarted])
 
   const currentQuestion = questions[currentIndex]
 
@@ -96,6 +105,7 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
     if (!canSubmit) return
 
     setIsSubmitted(true)
+    setIsQuizStarted(true) // Mark quiz as started to prevent re-shuffling
 
     const correctIndices = new Set(
       currentQuestion.answers
@@ -151,6 +161,7 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
     setWrongQuestionIds(new Set())
     setRetryMode(false)
     setRetryQuestionIds([])
+    setIsQuizStarted(false) // Allow re-shuffling on restart
   }
 
   const handleRetryWrong = () => {
@@ -306,12 +317,27 @@ export default function Quiz({ lesson, onBack, onComplete }: Props) {
               />
             </div>
           </div>
-          <div className="current-score">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            {score.correct}/{score.total}
+          <div className="quiz-controls">
+            <label className="shuffle-toggle" title="Zamíchat pořadí otázek">
+              <input
+                type="checkbox"
+                checked={shuffleEnabled}
+                onChange={(e) => {
+                  if (!isQuizStarted) {
+                    setShuffleEnabled(e.target.checked)
+                  }
+                }}
+                disabled={isQuizStarted}
+              />
+              <span>🔀</span>
+            </label>
+            <div className="current-score">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              {score.correct}/{score.total}
+            </div>
           </div>
         </div>
       </div>

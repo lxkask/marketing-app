@@ -17,6 +17,7 @@ interface QuizQuestion extends Question {
 export default function GlobalQuiz({ lessons, onBack }: Props) {
   const [mode, setMode] = useState<QuizMode>('setup')
   const [questionCount, setQuestionCount] = useState(20)
+  const [shuffleEnabled, setShuffleEnabled] = useState(true)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Set<number>>(new Set())
@@ -43,8 +44,14 @@ export default function GlobalQuiz({ lessons, onBack }: Props) {
   const totalAvailable = allQuestions.length
 
   const startQuiz = () => {
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5)
-    const selected = shuffled.slice(0, Math.min(questionCount, totalAvailable))
+    let selectedQuestions = [...allQuestions]
+
+    // Shuffle if enabled
+    if (shuffleEnabled) {
+      selectedQuestions = selectedQuestions.sort(() => Math.random() - 0.5)
+    }
+
+    const selected = selectedQuestions.slice(0, Math.min(questionCount, totalAvailable))
     setQuestions(selected)
     setCurrentIndex(0)
     setSelectedAnswers(new Set())
@@ -206,6 +213,16 @@ export default function GlobalQuiz({ lessons, onBack }: Props) {
               ))}
             </div>
           </div>
+
+          <label className="shuffle-option">
+            <input
+              type="checkbox"
+              checked={shuffleEnabled}
+              onChange={(e) => setShuffleEnabled(e.target.checked)}
+            />
+            <span className="shuffle-icon">🔀</span>
+            <span className="shuffle-text">Zamíchat pořadí otázek</span>
+          </label>
 
           <button className="start-button" onClick={startQuiz}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

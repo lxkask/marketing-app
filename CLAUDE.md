@@ -66,7 +66,10 @@ node scripts/generateExplanations.js # Generate AI-enhanced explanations for all
   - AI-enhanced explanations with concept definitions (E key)
   - Retry wrong answers functionality
   - Progress bar and current score display
-- `components/GlobalQuiz.tsx` - Cumulative quiz across all lessons with configurable question count
+  - Shuffle toggle (🔀) - randomize question order before starting quiz
+- `components/GlobalQuiz.tsx` - Cumulative quiz across all lessons with:
+  - Configurable question count (10, 20, 50, or all)
+  - Shuffle option (default enabled) - randomize question order
 - `components/Flashcards.tsx` - Single-lesson flashcards mode with:
   - 3D flip animation (Space key to flip)
   - Navigation between cards (← → arrow keys)
@@ -122,6 +125,9 @@ type FlashcardQuestion = Question & { lessonId: number, lessonTitle: string }
   - `←` Previous card
   - `→` Next card
   - `F` Toggle favorite (⭐)
+- **Question Shuffling**: Randomize question order in quizzes
+  - Single-lesson quiz: Toggle 🔀 icon in quiz header (disabled after first answer)
+  - Global quiz: Checkbox on setup screen (default enabled)
 - **Progress Tracking**: Completion status and scores saved in localStorage
 - **Dark Mode**: Eye-friendly dark theme toggle
 - **Retry Mode**: Practice only the questions you got wrong
